@@ -28,7 +28,7 @@ const serial = async (
             // Credenciais do banco de dados
             host: 'localhost',
             user: 'root',
-            password: '07112018', //aquela lá da vm se for vm //senha do pc felipe se for 3306
+            password: 'preencher', //aquela lá da vm se for vm //senha do pc felipe se for 3306
             database: 'ecoffe',
             port: 3306
         }
