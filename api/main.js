@@ -17,10 +17,7 @@ const HABILITAR_OPERACAO_INSERIR = true;
 // Função para comunicação serial
 const serial = async (
     valoresDht11Umidade,
-    valoresDht11Temperatura,
-    valoresLuminosidade,
-    valoresLm35Temperatura,
-    valoresChave
+    valoresDht11Temperatura
 ) => {
     let poolBancoDados = ''
 
@@ -29,11 +26,11 @@ const serial = async (
         {
             // altere!
             // Credenciais do banco de dados
-            host: '10.18.32.119',
-            user: 'aluno',
-            password: 'Sptech#2024',
-            database: 'arduino',
-            port: 3307
+            host: 'localhost',
+            user: 'root',
+            password: '07112018', //aquela lá da vm se for vm //senha do pc felipe se for 3306
+            database: 'ecoffe',
+            port: 3306
         }
     ).promise();
 
@@ -76,7 +73,7 @@ const serial = async (
             // altere!
             // Este insert irá inserir os dados na tabela "medida"
             await poolBancoDados.execute(
-                'INSERT INTO dados (temperatura, umidade) VALUES (?, ?)',
+                'INSERT INTO dados (idDados, fkSensor, temperatura, umidade, diaHora) VALUES (default, 2, ?, ?, default)',
                 [dht11Temperatura, dht11Umidade]
             );
             console.log("valores inseridos no banco: ", dht11Temperatura + ", " + dht11Umidade)
@@ -96,10 +93,8 @@ const serial = async (
 // Função para criar e configurar o servidor web
 const servidor = (
     valoresDht11Umidade,
-    valoresDht11Temperatura,
-    valoresLuminosidade,
-    valoresLm35Temperatura,
-    valoresChave
+    valoresDht11Temperatura
+
 ) => {
     const app = express();
 
@@ -122,15 +117,6 @@ const servidor = (
     app.get('/sensores/dht11/temperatura', (_, response) => {
         return response.json(valoresDht11Temperatura);
     });
-    app.get('/sensores/luminosidade', (_, response) => {
-        return response.json(valoresLuminosidade);
-    });
-    app.get('/sensores/lm35/temperatura', (_, response) => {
-        return response.json(valoresLm35Temperatura);
-    });
-    app.get('/sensores/chave', (_, response) => {
-        return response.json(valoresChave);
-    });
 }
 
 // Função principal assíncrona para iniciar a comunicação serial e o servidor web
@@ -138,25 +124,16 @@ const servidor = (
     // Arrays para armazenar os valores dos sensores
     const valoresDht11Umidade = [];
     const valoresDht11Temperatura = [];
-    const valoresLuminosidade = [];
-    const valoresLm35Temperatura = [];
-    const valoresChave = [];
 
     // Inicia a comunicação serial
     await serial(
         valoresDht11Umidade,
         valoresDht11Temperatura,
-        valoresLuminosidade,
-        valoresLm35Temperatura,
-        valoresChave
     );
 
     // Inicia o servidor web
     servidor(
         valoresDht11Umidade,
         valoresDht11Temperatura,
-        valoresLuminosidade,
-        valoresLm35Temperatura,
-        valoresChave
     );
 })();

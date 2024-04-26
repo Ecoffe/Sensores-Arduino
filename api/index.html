@@ -29,23 +29,32 @@
     </div>
 
     <script>
-        /* -- dht11Umidade -- */
-        var contextoDht11Umidade = document.getElementById('dht11Umidade').getContext('2d');
-        contextoDht11Umidade.canvas.width = 1000;
-        contextoDht11Umidade.canvas.height = 300;
-        var dht11Umidade = new Chart(
-            contextoDht11Umidade,
+        var contextoGrafico = document.getElementById('dht11Umidade').getContext('2d');
+        contextoGrafico.canvas.width = 1000;
+        contextoGrafico.canvas.height = 300;
+
+        var grafico = new Chart(
+            contextoGrafico,
             {
                 type: 'line',
                 data: {
-                    datasets: [{
-                        label: 'Umidade',
-                        type: 'line',
-                        borderColor: 'rgb(82, 120, 83)',
-                        backgroundColor: 'none'
-                    }],
-
+                    labels: ['10:00','11:00'],
+                    datasets: [
+                        {
+                            label: 'Umidade(%)',
+                            borderColor: 'rgb(82, 120, 83)',
+                            backgroundColor: 'transparent',
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'Temperatura(ºC)',
+                            borderColor: 'rgb(238, 114, 20)',
+                            backgroundColor: 'transparent',
+                            borderWidth: 3
+                        }
+                    ]
                 },
+
                 options: {
                     scales: {
                         xAxes: [{
@@ -54,52 +63,10 @@
                                 beginAtZero: true
                             }
                         }],
-                        yAxes: [{
+                        yAxes: [{   
                             scaleLabel: {
                                 display: true,
-                                labelString: 'Umidade'
-                            },
-                            ticks: {
-                                stepSize: 20, // Define o intervalo entre os números
-                                min: 0, // Valor mínimo no eixo Y
-                                max: 120 // Valor máximo no eixo Y
-                            }
-                        }]
-                    },
-                    animation: {
-                        duration: 0
-                    }
-                }
-            }
-        );
-        /* -- dht11Temperatura -- */
-        var contextoDht11Temperatura = document.getElementById('dht11Temperatura').getContext('2d');
-        contextoDht11Temperatura.canvas.width = 1000;
-        contextoDht11Temperatura.canvas.height = 300;
-        var dht11Temperatura = new Chart(
-            contextoDht11Temperatura,
-            {
-                type: 'line',
-                data: {
-                    datasets: [{
-                        label: "Temperatura",
-                        type: 'line',
-                        borderColor: 'rgb(238, 114, 20)',
-
-                    }]
-                },
-                options: {
-                    scales: {
-                        xAxes: [{
-                            distribution: 'series',
-                            ticks: {
-                                beginAtZero: true
-                            }
-                        }],
-                        yAxes: [{
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Luminosidade'
+                                labelString: 'Valor'
                             },
                             ticks: {
                                 beginAtZero: true
@@ -112,11 +79,11 @@
                 }
             }
         );
-       
 
         var paginacao = {};
         var tempo = {};
-        function obterDados(grafico, endpoint) {
+
+        function obterDados(endpoint, datasetIndex) {
             var http = new XMLHttpRequest();
             http.open('GET', 'http://localhost:3300/sensores/' + endpoint, false);
             http.send(null);
@@ -127,32 +94,27 @@
             if (tempo[endpoint] == null) {
                 tempo[endpoint] = 0;
             }
-            // Exibir à partir do último elemento exibido anteriormente
             var ultimaPaginacao = paginacao[endpoint];
             paginacao[endpoint] = valores.length;
             var valores = valores.slice(ultimaPaginacao);
             valores.forEach((valor) => {
-                //Máximo de 60 itens exibidos no gráfico
-                if (grafico.data.labels.length == 10 && grafico.data.datasets[0].data.length == 10) {
+                if (grafico.data.labels.length == 10) {
                     grafico.data.labels.shift();
-                    grafico.data.datasets[0].data.shift();
+                    grafico.data.datasets[datasetIndex].data.shift();
                 }
-
                 grafico.data.labels.push(tempo[endpoint]++);
-                grafico.data.datasets[0].data.push(parseFloat(valor));
+                grafico.data.datasets[datasetIndex].data.push(parseFloat(valor));
                 grafico.update();
-            })
+            });
         }
 
         setInterval(() => {
-            obterDados(dht11Umidade, 'dht11/umidade');
-            obterDados(dht11Temperatura, 'dht11/temperatura');
-            obterDados(luminosidade, 'luminosidade');
-            obterDados(lm35Temperatura, 'lm35/temperatura');
-            obterDados(chave, 'chave');
+            obterDados('dht11/umidade', 0); // Índice 0 para o conjunto de dados de umidade
+            obterDados('dht11/temperatura', 1); // Índice 1 para o conjunto de dados de temperatura
         }, 1000);
-
     </script>
+
+
 </body>
 
 </html>
